@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mappings xmlns="http://dozer.sourceforge.net" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://dozer.sourceforge.net http://dozer.sourceforge.net/schema/beanmapping.xsd">
+    <configuration>
+        <wildcard>false</wildcard>
+    </configuration>
+    <mapping>
+        <class-a>countryinfo_schema.CountryInfoschema</class-a>
+        <class-b>generated_1524060948357.CountryInfoSubset</class-b>
+        <field>
+            <a>capital</a>
+            <b>capital</b>
+        </field>
+        <field>
+            <a>name</a>
+            <b>name</b>
+        </field>
+        <field>
+            <a>region</a>
+            <b>region</b>
+        </field>
+        <field>
+            <a>languages[0].name</a>
+            <b>language</b>
+        </field>
+    </mapping>
+</mappings>

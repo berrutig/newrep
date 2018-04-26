@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    JBoss, Home of Professional Open Source
+    Copyright 2014, Red Hat, Inc. and/or its affiliates, and individual
+    contributors by the @authors tag. See the copyright.txt in the
+    distribution for a full listing of individual contributors.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<!--
+   This is the OSGi Blueprint XML file defining the Camel context and routes.  Because the file is in the
+   OSGI-INF/blueprint directory inside our JAR, it will be automatically activated as soon as the bundle is installed.
+
+   The root element for any OSGi Blueprint file is 'blueprint' - you also see the namespace definitions for both the Blueprint
+   and the Camel namespaces.
+-->
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.osgi.org/xmlns/blueprint/v1.0.0 https://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd                            http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd">
+    <!--
+      The namespace for the camelContext element in Blueprint is 'https://camel.apache.org/schema/blueprint'. Additionally,
+      we can also define namespace prefixes we want to use them in the XPath expressions in our CBR.
+
+      While it is not required to assign id's to the <camelContext/> and <route/> elements, it is a good idea
+      to set those for runtime management purposes (logging, JMX MBeans, ...)
+    -->
+    <bean class="demo.myaggregator.MyAggregator" id="MyAggregator"/>
+    <camelContext id="_context1" xmlns="http://camel.apache.org/schema/blueprint">
+        <endpoint id="json_2_xml_1" uri="dozer:json_2_xml_1?sourceModel=countryinfo_schema.CountryInfoschema&amp;targetModel=generated_1524060948357.CountryInfoSubset&amp;marshalId=generated_1524060948357&amp;unmarshalId=countryinfo_schemaCountryInfoschema&amp;mappingFile=transformation.xml"/>
+        <dataFormats>
+            <json id="countryinfo_schemaCountryInfoschema"
+                library="Jackson" unmarshalTypeName="countryinfo_schema.CountryInfoschema"/>
+            <jaxb contextPath="generated_1524060948357" id="generated_1524060948357"/>
+        </dataFormats>
+        <route id="_route1">
+            <from id="_from1" uri="restlet:http://localhost:8441/demo/country/info?restletMethod=post"/>
+            <setProperty id="_setProperty2" propertyName="country_name">
+                <xpath>//country/text()</xpath>
+            </setProperty>
+            <log id="_log1" message="Body is ${in.body}"/>
+            <log id="_log2" message="Country is ${property.country_name}"/>
+            <toD id="_to1" uri="restlet:http://restcountries.eu:80/rest/v2/alpha/${property.country_name}?fields=name;languages;capital;region"/>
+            <log id="_log4" message="First element in collection is ${body}"/>
+            <to id="_to2" uri="ref:json_2_xml_1"/>
+            <log id="_log3" message="Full Body is ${body}"/>
+        </route>
+        <route id="_route2">
+            <from id="_to3" uri="restlet:http://localhost:8441/demo/countries/info?restletMethod=post"/>
+            <split id="_split1" strategyRef="MyAggregator">
+                <xpath>//countries/name/text()</xpath>
+                <toD id="_to4" uri="restlet:http://restcountries.eu:80/rest/v2/name/${body}?fields=name;languages;capital;region"/>
+                <setBody id="_setBody1">
+                    <jsonpath>$.[0]</jsonpath>
+                </setBody>
+                <log id="_log6" message="${body}"/>
+                <to id="_to5" uri="ref:json_2_xml_1"/>
+                <log id="_log5" message="${body}"/>
+                <setProperty id="_setProperty1" propertyName="result_text">
+                    <xpath resultType="String">concat('People from ',//name/text(),' speak ',//language/text(),' and are from ',//region/text(),'. The capital is ',//capital/text())</xpath>
+                </setProperty>
+                <log id="_log7" message="${property.result_text}"/>
+            </split>
+        </route>
+    </camelContext>
+</blueprint>

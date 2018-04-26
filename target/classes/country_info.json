@@ -1,0 +1,13 @@
+    {
+        "languages": [
+            {
+                "iso639_1": "ar",
+                "iso639_2": "ara",
+                "name": "Arabic",
+                "nativeName": "العربية"
+            }
+        ],
+        "name": "Egypt",
+        "capital": "Cairo",
+        "region": "Africa"
+    }
